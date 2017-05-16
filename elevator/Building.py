@@ -12,6 +12,7 @@ class Building:
     threads = []
     elevatorCalls = []
     totalTravelTime = 0
+    peopleInFloors = []
 
     """constructor"""
 
@@ -26,11 +27,23 @@ class Building:
         for floorNum in range(1, numOfFloors + 1):
             self.floors[floorNum] = Floor(floorNum, peopleInFloor, numOfFloors)
 
+
         for i in range(0, numOfElevators):
             self.elevators.append(Elevator(i))
 
             # print self.elevators
             # print 'Floors: ', self.floors
+    def floorCheck(self):
+        for k,v in self.floors.items():
+            if v.isNotEmpty():
+                return False
+        return True
+
+    def elevatorCheck(self):
+        for ele in self.elevators:
+            if ele.hasMoreStops():
+                return False
+        return True
 
     def optimalElevatorID(self, source, direction):
         elevatorFloors = {}
@@ -69,7 +82,10 @@ class Building:
         i = 0
         t = {}
 
-        while (lambda x: x in self.elevators.isNotEmpty()) or (lambda y: y in self.elevators.hasMoreStops()):
+        print 'FloorCheck: ', self.floorCheck(), 'ElevatorCheck: ', self.elevatorCheck()
+
+        while (self.floorCheck() == False ):
+
             i = i + 1
             randFloor = random.randint(1, self.numberOfFloors)
             if not self.floors[randFloor].isEmpty():
@@ -82,13 +98,13 @@ class Building:
                     self.floors[randFloor].addDown(person.destintaion())
 
                 print 'Source = ', person.getFloor(), 'Destination = ', person.destintaion(), 'Direction = ', person.direction()
-                bestElev = self.optimalElevatorID(person.floor, person.direction())
-                if bestElev != -1:
-                    print 'bestElev = ', bestElev
-                    self.elevators[bestElev].addToLoads(person.getFloor())
-                    t[bestElev] = threading.Thread(target=self.elevators[bestElev].step(self.floors[randFloor]))
-                    if not t[bestElev].isAlive():
-                        t[bestElev].start()
+                bestElevator = self.optimalElevatorID(person.floor, person.direction())
+                if bestElevator != -1:
+                    print 'bestElevator = ', bestElevator
+                    self.elevators[bestElevator].addToLoads(person.getFloor())
+                    t[bestElevator] = threading.Thread(target=self.elevators[bestElevator].step(self.floors[randFloor]))
+                    if not t[bestElevator].isAlive():
+                        t[bestElevator].start()
 
                     randTime = random.uniform(0.1, 1.0)
                     time.sleep(randTime)
@@ -98,6 +114,13 @@ class Building:
         print t
         for thread in t:
             t[thread].join()
+
+        while (self.elevatorCheck() == False):
+            for ele in self.elevators:
+                if(ele.hasMoreStops()):
+                    t[ele.getID()].start()
+            for thread in t:
+                t[thread].join()
 
         for ele in self.elevators:
             print ele

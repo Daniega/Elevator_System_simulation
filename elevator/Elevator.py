@@ -102,6 +102,8 @@ class Elevator:
         if len(self.listOfLoads) == 0 and len(self.listOfUnloads) == 0:
             self.direction = 'idle'
 
+
+
     def addToLoads(self, floor):
         return self.listOfLoads.append(floor)
 
