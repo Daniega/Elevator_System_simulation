@@ -118,9 +118,10 @@ class Building:
         while (self.elevatorCheck() == False):
             for ele in self.elevators:
                 if(ele.hasMoreStops()):
+                    t[ele.getID()] = threading.Thread(target=self.elevators[ele.getID()].endStep())
                     t[ele.getID()].start()
-            for thread in t:
-                t[thread].join()
+        for thread in t:
+            t[thread].join()
 
         for ele in self.elevators:
             print ele

@@ -25,6 +25,18 @@ class Elevator:
     def getID(self):
         return self.id
 
+    def elevatorIsDown(self, floor):
+        for i in self.listOfUnloads:
+            if floor > i:
+                return False
+        return True
+
+    def elevatorIsUp(self, floor):
+        for i in self.listOfUnloads:
+            if floor < i:
+                return False
+        return True
+
     def hasMoreStops(self):
         if len(self.listOfUnloads) != 0:
             return True
@@ -46,7 +58,7 @@ class Elevator:
 
         if self.direction == 'up':
             if len(self.listOfUnloads) + len(inFloor.getUps()) > MaxCapacity:
-                while(len(self.listOfUnloads) + len(inFloor.getUps()) < MaxCapacity):
+                while (len(self.listOfUnloads) + len(inFloor.getUps()) < MaxCapacity):
                     if len(inFloor.getUps()) != 0:
                         print "UPS 111 = ", inFloor.getUps()
                         self.listOfUnloads.append(inFloor.getUps().pop(0))
@@ -61,7 +73,7 @@ class Elevator:
             self.listOfUnloads.sort()
         else:
             if len(self.listOfUnloads) + len(inFloor.getDowns()) > MaxCapacity:
-                while(len(self.listOfUnloads) + len(inFloor.getDowns())  < MaxCapacity ):
+                while (len(self.listOfUnloads) + len(inFloor.getDowns()) < MaxCapacity):
                     if len(inFloor.getDowns()) != 0:
                         print "Downs 111 = ", inFloor.getDowns()
                         self.listOfUnloads.append(inFloor.getDowns().pop(0))
@@ -73,7 +85,6 @@ class Elevator:
 
             self.listOfLoads.sort(reverse=True)
             self.listOfUnloads.sort(reverse=True)
-
 
         print "list of Ups 11111 ", self.listOfLoads, "List of Downs 11111 ", self.listOfUnloads
 
@@ -98,10 +109,36 @@ class Elevator:
             time.sleep(self.doortime)
             print 'Deleted from list of unloads', self.floor
 
-
         if len(self.listOfLoads) == 0 and len(self.listOfUnloads) == 0:
             self.direction = 'idle'
 
+    def endStep(self):
+
+        """handle situation: if There are no orders but there are people in the elevator, and elevator is idle"""
+        while self.floor not in (self.listOfLoads or self.listOfUnloads):
+            if (self.direction == 'up'):
+                self.floor += 1
+            elif (self.direction == 'down'):
+                self.floor -= 1
+            else:
+                if self.elevatorIsDown(self.floor):
+                    self.direction = 'up'
+                    self.floor += 1
+                elif self.elevatorIsUp(self.floor):
+                    self.direction = 'down'
+                    self.floor -= 1
+
+            self.timeTraveled += self.traveltime
+            time.sleep(self.traveltime)
+
+        if self.floor in self.listOfUnloads:
+            self.listOfUnloads = [x for x in self.listOfUnloads if x != self.floor]
+            self.timeTraveled += self.doortime
+            time.sleep(self.doortime)
+            print 'Deleted from list of unloads', self.floor
+
+        if len(self.listOfUnloads) == 0:
+            self.direction = 'idle'
 
 
     def addToLoads(self, floor):
@@ -143,7 +180,8 @@ class Elevator:
             #     waitTime += self.doortime
 
     def __repr__(self):
-        return '\nElevator(ID = {}):\nfloor = {}\nPeople = {}\nDirection = {}\nLoads = {}\nUnloads = {}\n'.format(self.id, self.floor,
-                                                                                                  self.people,
-                                                                                                  self.direction,
-                                                                                                  self.listOfLoads, self.listOfUnloads)
+        return '\nElevator(ID = {}):\nfloor = {}\nPeople = {}\nDirection = {}\nLoads = {}\nUnloads = {}\n'.format(
+            self.id, self.floor,
+            self.people,
+            self.direction,
+            self.listOfLoads, self.listOfUnloads)
