@@ -8,7 +8,11 @@ numOfFloors = input('Enter amount of floors: ')
 numOfElevators = input('Enter amount of elevators: ')
 
 
-b = Building(20, numOfFloors, numOfElevators)
-tot = b.simulateStrategy1()
-print tot
+a = Building(15, numOfFloors, numOfElevators)
+#b = Building(10, numOfFloors, numOfElevators)
+a1 = a.simulateStrategy1()
+#b2 = b.simulateStrategy2()
+
+print a1
+#print b.answer
 
