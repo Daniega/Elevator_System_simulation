@@ -29,7 +29,6 @@ class Building:
         for floorNum in range(1, numOfFloors + 1):
             self.floors[floorNum] = Floor(floorNum, peopleInFloor, numOfFloors)
 
-
         for i in range(0, numOfElevators):
             self.elevators.append(Elevator(i, numOfFloors))
 
@@ -37,7 +36,7 @@ class Building:
             # print 'Floors: ', self.floors
 
     def floorCheck(self):
-        for k,v in self.floors.items():
+        for k, v in self.floors.items():
             if v.isNotEmpty():
                 return False
         return True
@@ -66,7 +65,7 @@ class Building:
         print 'elevatorFloors = ', elevatorFloors
         if len(elevatorFloors) != 0:
             optimal = min(elevatorFloors.items(), key=lambda x: x[1])
-            if self.elevators[optimal[0]].getFloor() < source  and direction == 'down':
+            if self.elevators[optimal[0]].getFloor() < source and direction == 'down':
                 self.elevators[optimal[0]].setDirection('up')
             elif self.elevators[optimal[0]].getFloor() > source and direction == 'up':
                 self.elevators[optimal[0]].setDirection('down')
@@ -78,48 +77,89 @@ class Building:
         return -1
 
     """Regular simulation, when elevator finishes unloading, stays in current floor"""
+
     def simulateStrategy1(self):
-        i = 0
         t = {}
 
-        print 'FloorCheck: ', self.floorCheck(), 'ElevatorCheck: ', self.elevatorCheck()
-
-        while (self.floorCheck() == False ):
-
-            i = i + 1
+        """Iterate until all people get to their destination (all people drom all floors get to elevator)"""
+        while (self.floorCheck() == False):
+            """Get random floor, so call to elevator will be from random floor"""
             randFloor = random.randint(1, self.numberOfFloors)
-            if not self.floors[randFloor].isEmpty():
+            if not self.floors[randFloor].isEmpty():  # if random floor is not empty, get random person from this floor
                 person = self.floors[randFloor].getPerson()
 
-                """check person destination and add to floors list"""
+                """check person destination and add to floors UPS/DOWNS list"""
                 if person.direction == 'up':
                     self.floors[randFloor].addUp(person.destintaion())
                 else:
                     self.floors[randFloor].addDown(person.destintaion())
 
                 print 'Source = ', person.getFloor(), 'Destination = ', person.destintaion(), 'Direction = ', person.direction()
-                bestElevator = self.optimalElevatorID(person.floor, person.direction())
-                if bestElevator != -1:
+                bestElevator = self.optimalElevatorID(person.floor, person.direction()) # Choose best elevator to collect person
+                if bestElevator != -1: # If there is a best elevator?
                     print 'bestElevator = ', bestElevator
-                    self.elevators[bestElevator].addToLoads(person.getFloor())
-                    t[bestElevator] = threading.Thread(target=self.elevators[bestElevator].step(self.floors[randFloor]))
-                    print t[bestElevator]
+                    self.elevators[bestElevator].addToLoads(person.getFloor()) # Add persons floor to elevators 'Loads' list
+                    t[bestElevator] = threading.Thread(target=self.elevators[bestElevator].step(self.floors[randFloor])) # Thread of elevator
                     if not t[bestElevator].isAlive():
-                         t[bestElevator].start()
-                         print  t[bestElevator]
+                        t[bestElevator].start()
+                        print  t[bestElevator]
 
                     randTime = random.uniform(0.1, 1.0)
                     time.sleep(randTime)
                 else:
-                    self.floors[randFloor].pushPerson(person)
-        print 'Number of iterations = ', i
-        print t
+                    self.floors[randFloor].pushPerson(person) # If there is no best elevator, person should wait until there is a best elevator
         for thread in t:
             t[thread].join()
 
         while (self.elevatorCheck() == False):
             for ele in self.elevators:
-                if(ele.hasMoreStops()):
+                if (ele.hasMoreStops()):
+                    t[ele.getID()] = threading.Thread(target=self.elevators[ele.getID()].endStep())
+                    t[ele.getID()].start()
+        for thread in t:
+            t[thread].join()
+
+        for ele in self.elevators:
+            self.totalTravelTime += ele.getTimeTraveled()
+        answer = self.totalTravelTime / self.numberOfPeople
+        return answer
+
+    def simulateStrategy2(self):
+        t = {}
+
+        """Iterate until all people get to their destination (all people drom all floors get to elevator)"""
+        while (self.floorCheck() == False):
+            """Get random floor, so call to elevator will be from random floor"""
+            randFloor = random.randint(1, self.numberOfFloors)
+            if not self.floors[randFloor].isEmpty():  # if random floor is not empty, get random person from this floor
+                person = self.floors[randFloor].getPerson()
+
+                """check person destination and add to floors UPS/DOWNS list"""
+                if person.direction == 'up':
+                    self.floors[randFloor].addUp(person.destintaion())
+                else:
+                    self.floors[randFloor].addDown(person.destintaion())
+
+                print 'Source = ', person.getFloor(), 'Destination = ', person.destintaion(), 'Direction = ', person.direction()
+                bestElevator = self.optimalElevatorID(person.floor, person.direction()) # Choose best elevator to collect person
+                if bestElevator != -1: # If there is a best elevator?
+                    print 'bestElevator = ', bestElevator
+                    self.elevators[bestElevator].addToLoads(person.getFloor()) # Add persons floor to elevators 'Loads' list
+                    t[bestElevator] = threading.Thread(target=self.elevators[bestElevator].step2(self.floors[randFloor])) # Thread of elevator
+                    if not t[bestElevator].isAlive():
+                        t[bestElevator].start()
+                        print  t[bestElevator]
+
+                    randTime = random.uniform(0.1, 1.0)
+                    time.sleep(randTime)
+                else:
+                    self.floors[randFloor].pushPerson(person) # If there is no best elevator, person should wait until there is a best elevator
+        for thread in t:
+            t[thread].join()
+
+        while (self.elevatorCheck() == False):
+            for ele in self.elevators:
+                if (ele.hasMoreStops()):
                     t[ele.getID()] = threading.Thread(target=self.elevators[ele.getID()].endStep())
                     t[ele.getID()].start()
         for thread in t:
@@ -131,48 +171,42 @@ class Building:
         return answer
 
 
-    def simulateStrategy2(self):
-        i = 0
+    def simulateStrategy3(self):
         t = {}
 
-        print 'FloorCheck: ', self.floorCheck(), 'ElevatorCheck: ', self.elevatorCheck()
-
-        while (self.floorCheck() == False ):
-
-            i = i + 1
+        """Iterate until all people get to their destination (all people drom all floors get to elevator)"""
+        while (self.floorCheck() == False):
+            """Get random floor, so call to elevator will be from random floor"""
             randFloor = random.randint(1, self.numberOfFloors)
-            if not self.floors[randFloor].isEmpty():
+            if not self.floors[randFloor].isEmpty():  # if random floor is not empty, get random person from this floor
                 person = self.floors[randFloor].getPerson()
 
-                """check person destination and add to floors list"""
+                """check person destination and add to floors UPS/DOWNS list"""
                 if person.direction == 'up':
                     self.floors[randFloor].addUp(person.destintaion())
                 else:
                     self.floors[randFloor].addDown(person.destintaion())
 
                 print 'Source = ', person.getFloor(), 'Destination = ', person.destintaion(), 'Direction = ', person.direction()
-                bestElevator = self.optimalElevatorID(person.floor, person.direction())
-                if bestElevator != -1:
+                bestElevator = self.optimalElevatorID(person.floor, person.direction()) # Choose best elevator to collect person
+                if bestElevator != -1: # If there is a best elevator?
                     print 'bestElevator = ', bestElevator
-                    self.elevators[bestElevator].addToLoads(person.getFloor())
-                    t[bestElevator] = threading.Thread(target=self.elevators[bestElevator].step(self.floors[randFloor]))
-                    print t[bestElevator]
+                    self.elevators[bestElevator].addToLoads(person.getFloor()) # Add persons floor to elevators 'Loads' list
+                    t[bestElevator] = threading.Thread(target=self.elevators[bestElevator].step3(self.floors[randFloor])) # Thread of elevator
                     if not t[bestElevator].isAlive():
-                         t[bestElevator].start()
-                         print  t[bestElevator]
+                        t[bestElevator].start()
+                        print  t[bestElevator]
 
                     randTime = random.uniform(0.1, 1.0)
                     time.sleep(randTime)
                 else:
-                    self.floors[randFloor].pushPerson(person)
-        print 'Number of iterations = ', i
-        print t
+                    self.floors[randFloor].pushPerson(person) # If there is no best elevator, person should wait until there is a best elevator
         for thread in t:
             t[thread].join()
 
         while (self.elevatorCheck() == False):
             for ele in self.elevators:
-                if(ele.hasMoreStops()):
+                if (ele.hasMoreStops()):
                     t[ele.getID()] = threading.Thread(target=self.elevators[ele.getID()].endStep())
                     t[ele.getID()].start()
         for thread in t:
