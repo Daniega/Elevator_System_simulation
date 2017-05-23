@@ -25,6 +25,16 @@ class Building:
         self.elevators = []
 
         peopleInFloor = int(numberOfPeople / numOfFloors)
+        """need to fix"""
+        # peopleInFloor = int(numberOfPeople / numOfFloors)
+        # if peopleInFloor < 1:
+        #     while i < numberOfPeople:
+        #         rand = random.randint(0, 1)
+        #         if rand == 1:
+        #             while floorNum < numOfFloors + 1:
+        #                 self.floors[floorNum] = Floor(floorNum, rand, numOfFloors)
+        #                 floorNum += 1
+        #         else:
 
         for floorNum in range(1, numOfFloors + 1):
             self.floors[floorNum] = Floor(floorNum, peopleInFloor, numOfFloors)
