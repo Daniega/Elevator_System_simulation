@@ -23,18 +23,22 @@ class Building:
         self.numberOfFloors = numOfFloors
         self.floors = {}
         self.elevators = []
+        i = 0
 
         peopleInFloor = int(numberOfPeople / numOfFloors)
         """need to fix"""
         # peopleInFloor = int(numberOfPeople / numOfFloors)
         # if peopleInFloor < 1:
-        #     while i < numberOfPeople:
-        #         rand = random.randint(0, 1)
-        #         if rand == 1:
-        #             while floorNum < numOfFloors + 1:
-        #                 self.floors[floorNum] = Floor(floorNum, rand, numOfFloors)
-        #                 floorNum += 1
-        #         else:
+        #     while floorNum < numOfFloors + 1:
+        #         randPerson = random.randint(0, 1)
+        #         if i < numberOfPeople:
+        #             if randPerson == 1:
+        #                 self.floors[floorNum] = Floor(floorNum, randPerson, numOfFloors)
+        #                 floorNum = floorNum + 1
+        #                 i = i + 1
+        #             else:
+        #                 self.floors[floorNum] = Floor(floorNum, randPerson, numOfFloors)
+        #                 floorNum = floorNum + 1
 
         for floorNum in range(1, numOfFloors + 1):
             self.floors[floorNum] = Floor(floorNum, peopleInFloor, numOfFloors)
@@ -105,11 +109,14 @@ class Building:
                     self.floors[randFloor].addDown(person.destintaion())
 
                 print 'Source = ', person.getFloor(), 'Destination = ', person.destintaion(), 'Direction = ', person.direction()
-                bestElevator = self.optimalElevatorID(person.floor, person.direction()) # Choose best elevator to collect person
-                if bestElevator != -1: # If there is a best elevator?
+                bestElevator = self.optimalElevatorID(person.floor,
+                                                      person.direction())  # Choose best elevator to collect person
+                if bestElevator != -1:  # If there is a best elevator?
                     print 'bestElevator = ', bestElevator
-                    self.elevators[bestElevator].addToLoads(person.getFloor()) # Add persons floor to elevators 'Loads' list
-                    t[bestElevator] = threading.Thread(target=self.elevators[bestElevator].step(self.floors[randFloor])) # Thread of elevator
+                    self.elevators[bestElevator].addToLoads(
+                        person.getFloor())  # Add persons floor to elevators 'Loads' list
+                    t[bestElevator] = threading.Thread(
+                        target=self.elevators[bestElevator].step(self.floors[randFloor]))  # Thread of elevator
                     if not t[bestElevator].isAlive():
                         t[bestElevator].start()
                         print  t[bestElevator]
@@ -117,7 +124,8 @@ class Building:
                     randTime = random.uniform(0.1, 1.0)
                     time.sleep(randTime)
                 else:
-                    self.floors[randFloor].pushPerson(person) # If there is no best elevator, person should wait until there is a best elevator
+                    self.floors[randFloor].pushPerson(
+                        person)  # If there is no best elevator, person should wait until there is a best elevator
         for thread in t:
             t[thread].join()
 
@@ -151,11 +159,14 @@ class Building:
                     self.floors[randFloor].addDown(person.destintaion())
 
                 print 'Source = ', person.getFloor(), 'Destination = ', person.destintaion(), 'Direction = ', person.direction()
-                bestElevator = self.optimalElevatorID(person.floor, person.direction()) # Choose best elevator to collect person
-                if bestElevator != -1: # If there is a best elevator?
+                bestElevator = self.optimalElevatorID(person.floor,
+                                                      person.direction())  # Choose best elevator to collect person
+                if bestElevator != -1:  # If there is a best elevator?
                     print 'bestElevator = ', bestElevator
-                    self.elevators[bestElevator].addToLoads(person.getFloor()) # Add persons floor to elevators 'Loads' list
-                    t[bestElevator] = threading.Thread(target=self.elevators[bestElevator].step2(self.floors[randFloor])) # Thread of elevator
+                    self.elevators[bestElevator].addToLoads(
+                        person.getFloor())  # Add persons floor to elevators 'Loads' list
+                    t[bestElevator] = threading.Thread(
+                        target=self.elevators[bestElevator].step2(self.floors[randFloor]))  # Thread of elevator
                     if not t[bestElevator].isAlive():
                         t[bestElevator].start()
                         print  t[bestElevator]
@@ -163,7 +174,8 @@ class Building:
                     randTime = random.uniform(0.1, 1.0)
                     time.sleep(randTime)
                 else:
-                    self.floors[randFloor].pushPerson(person) # If there is no best elevator, person should wait until there is a best elevator
+                    self.floors[randFloor].pushPerson(
+                        person)  # If there is no best elevator, person should wait until there is a best elevator
         for thread in t:
             t[thread].join()
 
@@ -179,7 +191,6 @@ class Building:
             self.totalTravelTime += ele.getTimeTraveled()
         answer = self.totalTravelTime / self.numberOfPeople
         return answer
-
 
     def simulateStrategy3(self):
         t = {}
@@ -198,11 +209,14 @@ class Building:
                     self.floors[randFloor].addDown(person.destintaion())
 
                 print 'Source = ', person.getFloor(), 'Destination = ', person.destintaion(), 'Direction = ', person.direction()
-                bestElevator = self.optimalElevatorID(person.floor, person.direction()) # Choose best elevator to collect person
-                if bestElevator != -1: # If there is a best elevator?
+                bestElevator = self.optimalElevatorID(person.floor,
+                                                      person.direction())  # Choose best elevator to collect person
+                if bestElevator != -1:  # If there is a best elevator?
                     print 'bestElevator = ', bestElevator
-                    self.elevators[bestElevator].addToLoads(person.getFloor()) # Add persons floor to elevators 'Loads' list
-                    t[bestElevator] = threading.Thread(target=self.elevators[bestElevator].step3(self.floors[randFloor])) # Thread of elevator
+                    self.elevators[bestElevator].addToLoads(
+                        person.getFloor())  # Add persons floor to elevators 'Loads' list
+                    t[bestElevator] = threading.Thread(
+                        target=self.elevators[bestElevator].step3(self.floors[randFloor]))  # Thread of elevator
                     if not t[bestElevator].isAlive():
                         t[bestElevator].start()
                         print  t[bestElevator]
@@ -210,7 +224,8 @@ class Building:
                     randTime = random.uniform(0.1, 1.0)
                     time.sleep(randTime)
                 else:
-                    self.floors[randFloor].pushPerson(person) # If there is no best elevator, person should wait until there is a best elevator
+                    self.floors[randFloor].pushPerson(
+                        person)  # If there is no best elevator, person should wait until there is a best elevator
         for thread in t:
             t[thread].join()
 
